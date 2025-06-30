@@ -1,79 +1,65 @@
 import streamlit as st
 import joblib
+from PIL import Image
 
-# Load model, vectorizer, and label encoder
-model = joblib.load("model.pkl")
-vectorizer = joblib.load("vectorizer.pkl")
-label_encoder = joblib.load("label_encoder.pkl")
+# Load saved components
+model = joblib.load('model.pkl')
+vectorizer = joblib.load('vectorizer.pkl')
+label_encoder = joblib.load('label_encoder.pkl')
 
-# Set page configuration
-st.set_page_config(
-    page_title="Fake News Detection App",
-    page_icon="📰",
-    layout="centered"
+# ----- Banner Image -----
+image = Image.open("image.png")
+st.image(image, use_container_width=True)
+
+
+# ----- Header -----
+st.markdown(
+    "<h1 style='text-align: center; color: #38bdf8;'>📰 Fake News Detection App</h1>",
+    unsafe_allow_html=True
 )
 
+
+# ----- Info Box -----
 st.markdown(
     """
-    <h2 style='text-align:center; color:#2e7d32;'>📰 Fake News Detection App</h2>
-    
+    <div style="background-color: #1e293b; padding: 1rem; border-left: 6px solid #38bdf8;
+    border-radius: 10px; margin-top: 1rem; margin-bottom: 2rem;">
+        <span style="color: #f1f5f9; font-size: 15px;">
+        <b>ℹ️ Note:</b> This model is trained primarily on full article content.
+        For best results, please enter a complete news article or a meaningful excerpt.
+        Headlines may give less accurate results due to limited context.
+        </span>
+    </div>
     """,
     unsafe_allow_html=True
 )
 
+# ----- Input Area -----
+st.markdown("### 🖊️ Paste the news content below:")
+user_input = st.text_area("", height=220, placeholder="Enter complete news article...")
 
-
-st.markdown("""
-<style>
-@media (prefers-color-scheme: dark) {
-  .description {
-    color: #e0e0e0;
-  }
-}
-@media (prefers-color-scheme: light) {
-  .description {
-    color: #333333;
-  }
-}
-</style>
-
-<p class='description' style='text-align: center; font-size: 17px; line-height: 1.6;'>
-Welcome to the <strong>Fake News Detection App</strong> — a lightweight, AI-powered tool trained on real-world news articles.<br><br>
-Enter any news paragraph or headline below to check whether it is <strong>Real</strong> or <strong>Fake</strong>, along with a confidence score.
-</p>
-""", unsafe_allow_html=True)
-
-
-
-
-st.markdown("---")
-
-# Text Input
-user_input = st.text_area("📝 Paste News Content Here:", height=200, help="Use full article or paragraph for better accuracy.")
-
-# Prediction
+# ----- Predict Button -----
 if st.button("🔍 Analyze"):
     if user_input.strip() == "":
-        st.warning("⚠️ Please enter some news content to analyze.")
+        st.warning("⚠️ Please enter some text to analyze.")
     else:
         input_vector = vectorizer.transform([user_input])
         prediction = model.predict(input_vector)[0]
-        label = label_encoder.inverse_transform([prediction])[0]
+        predicted_label = label_encoder.inverse_transform([prediction])[0]
 
-        if label == "FAKE":
-            st.error("❌ This news appears to be **Fake**.")
+        if predicted_label == "FAKE":
+            st.error("❌ This news appears to be *Fake*.")
         else:
-            st.success("✅ This news appears to be **Real**.")
+            st.success("✅ This news appears to be *Real*.")
 
-        # Confidence Score
-        confidence = model.decision_function(input_vector)[0]
-        st.caption(f"🧠 Confidence Score: {round(abs(confidence), 2)}")
-
-# Footer
-st.markdown("---")
+# ----- Footer -----
 st.markdown(
-    "<p style='text-align: center; font-size: 13px; color: gray;'>Built by Sneha Pandey | Powered by Streamlit & Scikit-Learn</p>",
+    "<hr style='margin-top: 3rem;'>"
+    "<div style='text-align: center; color: gray;'>"
+    "Built with ❤️ by Sneha Pandey | Powered by Streamlit & Scikit-learn"
+    "</div>",
     unsafe_allow_html=True
 )
+
 
 
